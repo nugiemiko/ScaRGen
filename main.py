@@ -1,9 +1,10 @@
 
-import sys
+import sys, json, os
 from pathlib import Path
+from PyQt6 import QtGui
 from pdf import splitPdf
 from PyQt6.QtGui import QTextCursor
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, QSettings
 from PyQt6.QtWidgets import (
     QApplication, 
     QMainWindow, 
@@ -36,6 +37,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.folder = QFileDialog(self)
+        self.appFolder = os.getcwd()
 
         self.setWindowTitle("Scarlet Report Generator")
         self.setFixedWidth(600)
@@ -54,8 +56,8 @@ class MainWindow(QMainWindow):
         self.SplitTable1 = QTableWidget()
         self.SplitTable1.setColumnCount(2)
         self.SplitTable1.setHorizontalHeaderLabels(['Quotes', 'FileName'])
-        self.add_table_row(self.SplitTable1, 'SITE QUALITY ACCEPTANCE CERTIFICATE,KPI Trend –,Productivity –', 'KPI stat QC and Certificate')
-        self.add_table_row(self.SplitTable1, 'SITE QUALITY ACCEPTANCE CERTIFICATE,DRIVETEST', 'Plot DT')
+        #self.add_table_row(self.SplitTable1, 'SITE QUALITY ACCEPTANCE CERTIFICATE,KPI Trend –,Productivity –', 'KPI stat QC and Certificate')
+        #self.add_table_row(self.SplitTable1, 'SITE QUALITY ACCEPTANCE CERTIFICATE,DRIVETEST', 'Plot DT')
         self.SplitTable1.setColumnWidth(0,367)
         self.SplitTable1.setFixedHeight(120)
 
@@ -85,8 +87,8 @@ class MainWindow(QMainWindow):
         self.SplitTable2 = QTableWidget()
         self.SplitTable2.setColumnCount(2)
         self.SplitTable2.setHorizontalHeaderLabels(['Quotes', 'FileName'])
-        self.add_table_row(self.SplitTable2, 'ALMAF', 'Alarm report')
-        self.add_table_row(self.SplitTable2, 'EUTRANCELLFREQ', 'Neighbor report')
+        #self.add_table_row(self.SplitTable2, 'ALMAF', 'Alarm report')
+        #self.add_table_row(self.SplitTable2, 'EUTRANCELLFREQ', 'Neighbor report')
         self.SplitTable2.setColumnWidth(0,367)
         self.SplitTable2.setFixedHeight(120)
 
@@ -115,6 +117,7 @@ class MainWindow(QMainWindow):
 
         self.logText = QTextEdit()
         self.logText.setReadOnly(True)
+        self.logText.setFixedHeight(150)
         self.logText.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
         self.logText.verticalScrollBar().setValue(self.logText.verticalScrollBar().maximum())
         #sb.setValue(sb.maximum())
@@ -136,6 +139,12 @@ class MainWindow(QMainWindow):
         sys.stdout = StreamRedirector(self.logText)
         sys.stderr = StreamRedirector(self.logText)
 
+        self.loadConfig()
+
+    def closeEvent(self, event):
+        self.saveConfig()
+        event.accept()        
+
     def selectFolder(self, widget_arg):
         folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         widget_arg.setText(folder)
@@ -145,7 +154,7 @@ class MainWindow(QMainWindow):
     def add_table_row(self, widget_arg, value1, value2):
         row_count = widget_arg.rowCount()
         widget_arg.insertRow(row_count)
-        teks = 'Insert new row at ' + str(row_count) + '\n'
+        teks = 'Insert new row at ' + str(row_count + 1) + '\n'
         widget_arg.setItem(row_count, 0, QTableWidgetItem(value1))
         teks = teks + 'Quotes: ' + value1 + '\n'
         widget_arg.setItem(row_count, 1, QTableWidgetItem(value2))
@@ -167,24 +176,66 @@ class MainWindow(QMainWindow):
             print(teks)
     
     def execute_program(self):
+        self.saveConfig()
         dataPdf = {}
 
-        if self.LineInput1.text != '':
+        if self.LineInput1.text() != '':
             path = self.LineInput1.text()
             teks = 'Pdf Split on folder: ' + path
             print(teks)
-            for row in range(self.SplitTable1.rowCount()):
-                _key = self.SplitTable1.item(row, 1)
-                _item = self.SplitTable1.item(row, 0)
-                if _key and _item:
-                    key = self.SplitTable1.item(row,1).text()
-                    item = [x.strip() for x in self.SplitTable1.item(row,0).text().split(',')]
-                    dataPdf[key] = item
+            dataPdf = self.extractDict(self.SplitTable1)
+#            for row in range(self.SplitTable1.rowCount()):
+#                _key = self.SplitTable1.item(row, 1)
+#                _item = self.SplitTable1.item(row, 0)
+#                if _key and _item:
+#                    key = self.SplitTable1.item(row,1).text()
+#                    item = [x.strip() for x in self.SplitTable1.item(row,0).text().split(',')]
+#                    dataPdf[key] = item
+            print(dataPdf)
             splitPdf(Path(path), dataPdf)
             self.LineInput1.setText('')
-        if self.LineInput2.text != '':
+        if self.LineInput2.text() != '':
             self.LineInput2.setText('')
-        print(dataPdf)
+
+    def extractDict(self, widget_arg):
+        dataDict = {}
+        for row in range(widget_arg.rowCount()):
+            _key = widget_arg.item(row, 1)
+            _item = widget_arg.item(row, 0)
+            if _key and _item:
+                key = widget_arg.item(row,1).text()
+                item = [x.strip() for x in widget_arg.item(row,0).text().split(',')]
+                dataDict[key] = item
+        return dataDict
+    
+    def loadDict(self, dataDict):
+        for tab in dataDict:
+            if tab == 'SplitTable1':
+                widget_arg = self.SplitTable1
+            elif tab == 'SplitTable2':
+                widget_arg = self.SplitTable2
+            for key in dataDict[tab]:
+                self.add_table_row(widget_arg, ','.join(dataDict[tab][key]), str(key))
+                print(key, '->', dataDict[tab][key])
+
+    def saveConfig(self):
+        dataDict = {}
+        settings = QSettings(os.path.join(self.appFolder, 'config.ini'), QSettings.Format.IniFormat)
+        if self.SplitTable1.rowCount() > 0:
+            dataDict['SplitTable1'] = self.extractDict(self.SplitTable1)
+        if self.SplitTable2.rowCount() > 0:
+            dataDict['SplitTable2'] = self.extractDict(self.SplitTable2)
+        json_data = json.dumps(dataDict)
+        print(dataDict)
+        print(os.path.join(self.appFolder, 'config.ini'))
+        settings.setValue("config", json_data)
+
+    def loadConfig(self):
+        settings = QSettings(os.path.join(self.appFolder, 'config.ini'), QSettings.Format.IniFormat)
+        json_data = settings.value("config", "{}")
+        dataDict = json.loads(json_data)
+        self.loadDict(dataDict)
+        print('load data: ', dataDict)
     
 app = QApplication(sys.argv)
 
