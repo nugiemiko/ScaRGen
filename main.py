@@ -39,6 +39,15 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.logText = QTextEdit()
+        self.logText.setReadOnly(True)
+        self.logText.setFixedHeight(150)
+        self.logText.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+        self.logText.verticalScrollBar().setValue(self.logText.verticalScrollBar().maximum())
+
+        sys.stdout = StreamRedirector(self.logText)
+        sys.stderr = StreamRedirector(self.logText)
+
         self.folder = QFileDialog(self)
         self.appFolder = os.getcwd()
 
@@ -53,6 +62,7 @@ class MainWindow(QMainWindow):
         self.LineInput1 = QLineEdit()
         self.LineInput1.setEnabled(False)
         self.LineInput1.setStyleSheet("border: 0px solid white; background-color: white")
+        print(self.getDate(), '| Line Input 1 -> ', self.LineInput1.objectName)
         btn1 = QPushButton("Folder")
         btn1.setObjectName = 'pdf'
         btn1.pressed.connect(lambda: self.selectFolder(self.LineInput1))
@@ -64,7 +74,7 @@ class MainWindow(QMainWindow):
         #self.add_table_row(self.SplitTable1, 'SITE QUALITY ACCEPTANCE CERTIFICATE,DRIVETEST', 'Plot DT')
         self.SplitTable1.setColumnWidth(0,367)
         self.SplitTable1.setFixedHeight(120)
-        self.SplitTable1.setObjectName = 'Table 1'
+        print(self.getDate(), '| Table 1 -> ', self.SplitTable1.objectName)
 
         self.insertRowButton1 =QPushButton('Insert Row')
         self.deleteRowButton1 =QPushButton('Delete Row')
@@ -86,6 +96,7 @@ class MainWindow(QMainWindow):
         self.LineInput2 = QLineEdit()
         self.LineInput2.setEnabled(False)
         self.LineInput2.setStyleSheet("border: 0px solid white; background-color: white")
+        print(self.getDate(), '| Line Input 2 -> ', self.LineInput2.objectName)
         btn2 = QPushButton("Folder")
         btn2.setAccessibleName = 'text'
         btn2.pressed.connect(lambda: self.selectFolder(self.LineInput2))
@@ -97,7 +108,7 @@ class MainWindow(QMainWindow):
         #self.add_table_row(self.SplitTable2, 'EUTRANCELLFREQ', 'Neighbor report')
         self.SplitTable2.setColumnWidth(0,367)
         self.SplitTable2.setFixedHeight(120)
-        self.SplitTable2.setObjectName = 'Table 2'
+        print(self.getDate(), '| Table 2 -> ', self.SplitTable2.objectName)
 
         self.insertRowButton2 = QPushButton('Insert Row')
         self.deleteRowButton2 = QPushButton('Delete Row')
@@ -122,12 +133,6 @@ class MainWindow(QMainWindow):
         self.ExecBtn = QPushButton('Execute')
         self.ExecBtn.pressed.connect(lambda: self.execute_program())
 
-        self.logText = QTextEdit()
-        self.logText.setReadOnly(True)
-        self.logText.setFixedHeight(150)
-        self.logText.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
-        self.logText.verticalScrollBar().setValue(self.logText.verticalScrollBar().maximum())
-
         MainLayout.addWidget(lineLimiter)
         MainLayout.addLayout(pdfRows)
         MainLayout.addLayout(topLayout)
@@ -141,9 +146,6 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(MainLayout)
         self.setCentralWidget(widget)
-
-        sys.stdout = StreamRedirector(self.logText)
-        sys.stderr = StreamRedirector(self.logText)
 
         self.loadConfig()
 
