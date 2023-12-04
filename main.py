@@ -252,7 +252,7 @@ class MainWindow(QMainWindow):
 
     def getDate(self):
         t = datetime.datetime.now()
-        dt = str(t.year).rjust(2, '0') + str(t.month).rjust(2, '0') + str(t.day).rjust(2, '0') + str(t.hour).rjust(2, '0') + str(t.minute).rjust(2, '0') + str(t.second).rjust(2, '0') + str(t.microsecond).rjust(2, '0')
+        dt = str(t.year).rjust(2, '0') + str(t.month).rjust(2, '0') + str(t.day).rjust(2, '0') + str(t.hour).rjust(2, '0') + str(t.minute).rjust(2, '0') + str(t.second).rjust(2, '0') + str(t.microsecond).rjust(8, '0')
         return dt 
     
 app = QApplication(sys.argv)

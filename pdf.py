@@ -8,20 +8,20 @@ def splitPdf(pdf_path, matcher):
         if not os.path.exists(os.path.join(pdf_path, 'output')):
             os.mkdir(os.path.join(pdf_path, 'output'))
         for file in files:
-            print(getDate(), '| Split pdf on : ', file)
             site = file.replace('.pdf','')[-6:]
             pdf_document = fitz.open(os.path.join(pdf_path, file))
+            print(getDates(), '| Split pdf on : ', os.path.join(pdf_path, file))
             for key in matcher:
                 doc = fitz.open()
                 for i in range(pdf_document.page_count):
                     content = pdf_document.load_page(i).get_text().split('\n')
                     if  [s for s in content if any(xs in s for xs in matcher[key])]:
                         teks = key + ' ' + site + file + ': page ' + str(i+1) 
-                        print(getDate(), '| ', teks)
+                        print(getDates(), '| ', teks)
                         doc.insert_pdf(pdf_document, from_page= i, to_page= i, start_at= -1)
                         saveFile = key + ' ' + site + '.pdf'
                         doc.save(os.path.join(pdf_path, 'output', saveFile))
-                        print(getDate(), '| save pdf at: ', os.path.join(pdf_path, 'output', saveFile))
+                        print(getDates(), '| save pdf at: ', os.path.join(pdf_path, 'output', saveFile))
                 doc.close()
 
 def writeToPdf(text, path, filename, doctype):
@@ -38,15 +38,15 @@ def writeToPdf(text, path, filename, doctype):
     if not os.path.exists(os.path.join(path, 'output')):
         os.mkdir(os.path.join(path, 'output'))
     pdf.output(os.path.join(path, 'output', filename))
-    print(getDate(), '| ', text.length(), ' lines printed on ', os.path.join(path, 'output', filename))
+    print(getDates(), '| ', text.length(), ' lines printed on ', os.path.join(path, 'output', filename))
     pdf.close()
 
 def parseText(path, matcher):
-    print(getDate(), '| Parse text on : ', file)
+    print(getDates(), '| Parse text on : ', file)
     files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and (f.endswith('.csv') or f.endswith('.txt'))]
     site = ''
     for ind, file in enumerate(files):
-        print(getDate(), 'Open file : ', file)
+        print(getDates(), 'Open file : ', file)
         with open(os.path.join(path, file), mode = 'r') as f:
             data = {}
             lines = f.readlines()
@@ -74,28 +74,28 @@ def parseText(path, matcher):
                     site = line[i[1]+2: i[2]-2]
                     if site[1:2] == '_':
                         site = site[2:8]
-                    print(getDate(), site)
+                    print(getDates(), site)
                 elif line.strip().startswith('+++    ') and grabFlag:
                     site = line.replace('+++    ','').strip()[:-19]
                     if site[1:2] == '_':
                         site = site[2:8]
-                    print(getDate(), site)
+                    print(getDates(), site)
                 if grabFlag:
                     data[header].append(line.strip())
-            print(getDate(), '| Parse ', data.length, ' lines')
+            print(getDates(), '| Parse ', data.length, ' lines')
             for key in matcher:
                 pdf = []
                 filename = key + ' ' + site + '.pdf'
                 for i in data:
                     if  [s for s in data[i] if any(xs in s for xs in matcher[key])]:
                         pdf.extend(data[i])
-                        print(getDate(), key, " => ", ('\n').join(data[i]))
+                        print(getDates(), key, " => ", ('\n').join(data[i]))
                 if pdf != []:
                     writeToPdf(pdf, path, filename, doctype)
-                    print(getDate(), '| saved on ', os.path.join(path, filename))
+                    print(getDates(), '| saved on ', os.path.join(path, filename))
 
-def getDate(self):
+def getDates():
     t = datetime.datetime.now()
-    dt = str(t.year).rjust(2, '0') + str(t.month).rjust(2, '0') + str(t.day).rjust(2, '0') + str(t.hour).rjust(2, '0') + str(t.minute).rjust(2, '0') + str(t.second).rjust(2, '0') + str(t.microsecond).rjust(2, '0')
+    dt = str(t.year).rjust(2, '0') + str(t.month).rjust(2, '0') + str(t.day).rjust(2, '0') + str(t.hour).rjust(2, '0') + str(t.minute).rjust(2, '0') + str(t.second).rjust(2, '0') + str(t.microsecond).rjust(8, '0')
     return dt 
     
