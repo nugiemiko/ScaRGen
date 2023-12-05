@@ -195,14 +195,20 @@ class MainWindow(QMainWindow):
             teks = 'execute pdf Split on folder: ' + path
             print(self.getDate(), '|', teks)
             dataPdf = self.extractDict(self.SplitTable1)
-            splitPdf(Path(path), dataPdf)
+            try:
+                splitPdf(Path(path), dataPdf)
+            except Exception as e:
+                print(self.getDate(), '| Error:', e)
             self.LineInput1.setText('')
         if self.LineInput2.text() != '':
             path = self.LineInput2.text()
             teks = 'execute text parsing on folder: ' + path
             print(self.getDate(), '|', teks)
             dataPdf = self.extractDict(self.SplitTable2)
-            parseText(Path(path), dataPdf)
+            try:
+                parseText(Path(path), dataPdf)
+            except Exception as e:
+                print(self.getDate(), '| Error:', e)
             self.LineInput2.setText('')
 
     def extractDict(self, widget_arg):
@@ -224,7 +230,7 @@ class MainWindow(QMainWindow):
                 widget_arg = self.SplitTable2
             for key in dataDict[tab]:
                 self.add_table_row(widget_arg, ','.join(dataDict[tab][key]), str(key))
-                print(self.getDate(), '| load ', key, '->', dataDict[tab][key])
+                print(self.getDate(), '| load', key, '->', dataDict[tab][key])
 
     def saveConfig(self):
         dataDict = {}
