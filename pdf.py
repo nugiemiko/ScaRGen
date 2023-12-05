@@ -17,7 +17,7 @@ def splitPdf(pdf_path, matcher):
                     content = pdf_document.load_page(i).get_text().split('\n')
                     if  [s for s in content if any(xs in s for xs in matcher[key])]:
                         teks = key + ' ' + site + file + ': page ' + str(i+1) 
-                        print(getDates(), '| ', teks)
+                        print(getDates(), '|', teks)
                         doc.insert_pdf(pdf_document, from_page= i, to_page= i, start_at= -1)
                         saveFile = key + ' ' + site + '.pdf'
                         doc.save(os.path.join(pdf_path, 'output', saveFile))
@@ -38,21 +38,21 @@ def writeToPdf(text, path, filename, doctype):
     if not os.path.exists(os.path.join(path, 'output')):
         os.mkdir(os.path.join(path, 'output'))
     pdf.output(os.path.join(path, 'output', filename))
-    print(getDates(), '| ', text.length(), ' lines printed on ', os.path.join(path, 'output', filename))
+    print(getDates(), '|', len(text), ' lines printed on ', os.path.join(path, 'output', filename))
     pdf.close()
 
 def parseText(path, matcher):
-    print(getDates(), '| Parse text on : ', file)
     files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and (f.endswith('.csv') or f.endswith('.txt'))]
     site = ''
     for ind, file in enumerate(files):
-        print(getDates(), 'Open file : ', file)
+        print(getDates(), '| Parse text on : ', file)
         with open(os.path.join(path, file), mode = 'r') as f:
             data = {}
             lines = f.readlines()
             grabFlag = False
             doctype = 0
             site = ''
+            header = ''
             for line in lines:
                 if line.strip().startswith('LST '):
                     header = line.strip()[4:-2]
@@ -74,22 +74,20 @@ def parseText(path, matcher):
                     site = line[i[1]+2: i[2]-2]
                     if site[1:2] == '_':
                         site = site[2:8]
-                    print(getDates(), site)
                 elif line.strip().startswith('+++    ') and grabFlag:
                     site = line.replace('+++    ','').strip()[:-19]
                     if site[1:2] == '_':
                         site = site[2:8]
-                    print(getDates(), site)
                 if grabFlag:
                     data[header].append(line.strip())
-            print(getDates(), '| Parse ', data.length, ' lines')
+            print(getDates(), '| Parse ', len(lines), ' lines')
             for key in matcher:
                 pdf = []
                 filename = key + ' ' + site + '.pdf'
                 for i in data:
                     if  [s for s in data[i] if any(xs in s for xs in matcher[key])]:
                         pdf.extend(data[i])
-                        print(getDates(), key, " => ", ('\n').join(data[i]))
+                        print(getDates(), "|", key, " => ", len(data[i]), " lines")
                 if pdf != []:
                     writeToPdf(pdf, path, filename, doctype)
                     print(getDates(), '| saved on ', os.path.join(path, filename))

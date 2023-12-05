@@ -1,7 +1,9 @@
+##
 ## Scarlet Report Generator
 ##
-## by NW@2023
-## for Prima
+## by NW@2023 for Prima
+## 
+##
 
 import sys, json, os, datetime
 from pathlib import Path
@@ -158,7 +160,7 @@ class MainWindow(QMainWindow):
         folder = str(QFileDialog.getExistingDirectory(self, "Select Directory"))
         widget_arg.setText(folder)
         teks = 'Add folder: ' + folder
-        print(self.getDate(), '| ', widget_arg.objectName, ' add folder : ',  teks)
+        print(self.getDate(), '|', widget_arg.objectName, ' add folder : ',  teks)
 
     def add_table_row(self, widget_arg, value1, value2):
         row_count = widget_arg.rowCount()
@@ -191,14 +193,14 @@ class MainWindow(QMainWindow):
         if self.LineInput1.text() != '':
             path = self.LineInput1.text()
             teks = 'execute pdf Split on folder: ' + path
-            print(self.getDate(), '| ', teks)
+            print(self.getDate(), '|', teks)
             dataPdf = self.extractDict(self.SplitTable1)
             splitPdf(Path(path), dataPdf)
             self.LineInput1.setText('')
         if self.LineInput2.text() != '':
             path = self.LineInput2.text()
             teks = 'execute text parsing on folder: ' + path
-            print(self.getDate(), '| ', teks)
+            print(self.getDate(), '|', teks)
             dataPdf = self.extractDict(self.SplitTable2)
             parseText(Path(path), dataPdf)
             self.LineInput2.setText('')
