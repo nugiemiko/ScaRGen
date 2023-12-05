@@ -199,6 +199,7 @@ class MainWindow(QMainWindow):
                 splitPdf(Path(path), dataPdf)
             except Exception as e:
                 print(self.getDate(), '| Error:', e)
+                self.saveLog()
             self.LineInput1.setText('')
         if self.LineInput2.text() != '':
             path = self.LineInput2.text()
@@ -209,6 +210,7 @@ class MainWindow(QMainWindow):
                 parseText(Path(path), dataPdf)
             except Exception as e:
                 print(self.getDate(), '| Error:', e)
+                self.saveLog()
             self.LineInput2.setText('')
 
     def extractDict(self, widget_arg):
