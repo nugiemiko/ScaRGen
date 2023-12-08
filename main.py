@@ -212,6 +212,7 @@ class MainWindow(QMainWindow):
                 print(self.getDate(), '| Error:', e)
                 self.saveLog()
             self.LineInput2.setText('')
+        print(self.getDate(), '| Execute Done')
 
     def extractDict(self, widget_arg):
         dataDict = {}

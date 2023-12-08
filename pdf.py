@@ -37,7 +37,20 @@ def writeToPdf(text, path, filename, doctype):
     pdf.ln()
     if not os.path.exists(os.path.join(path, 'output')):
         os.mkdir(os.path.join(path, 'output'))
-    pdf.output(os.path.join(path, 'output', filename))
+    if os.path.exists(os.path.join(path, 'output', filename)):
+        filename1 = filename.replace('.', '1.')
+        filename2 = filename.replace('.', '2.')
+        os.rename(os.path.join(path, 'output', filename), os.path.join(path, 'output', filename1))
+        pdf.output(os.path.join(path, 'output', filename2))
+        result = fitz.open()
+        for pdffile in [os.path.join(path, 'output', filename1), os.path.join(path, 'output', filename2)]:
+            with fitz.open(pdffile) as mfile:
+                result.insert_pdf(mfile)
+            os.remove(pdffile)
+        result.save(os.path.join(path, 'output', filename))
+        result.close()
+    else:
+        pdf.output(os.path.join(path, 'output', filename))
     print(getDates(), '|', len(text), ' lines printed on ', os.path.join(path, 'output', filename))
     pdf.close()
 
@@ -59,7 +72,7 @@ def parseText(path, matcher):
                     grabFlag = True
                     doctype = 1
                     data[header] = []
-                elif line.strip().startswith('\"Start Time\",\"Period(min)\"'):
+                elif line.strip().replace('\"', '').startswith('Start Time,Period(min)'):
                     header = 'Data' + str(len(line))
                     grabFlag = True
                     doctype = 2
@@ -71,7 +84,7 @@ def parseText(path, matcher):
                     data[header].append('')
                 elif doctype == 2 and grabFlag and site == '':
                     i = [m.start() for m in finditer(r',', line)]
-                    site = line[i[1]+2: i[2]-2]
+                    site = line.replace('\"', '')[i[1]+1: i[2]]
                     if site[1:2] == '_':
                         site = site[2:8]
                 elif line.strip().startswith('+++    ') and grabFlag:
