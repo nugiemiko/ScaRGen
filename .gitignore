@@ -1,6 +1,7 @@
 log/
 build/
 dist/
+__pycache__/
 ScaRGen.exe
 ScaRGen.spec
 Prima.png

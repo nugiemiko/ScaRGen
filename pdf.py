@@ -1,6 +1,6 @@
 import fitz, os, datetime
 from fpdf import FPDF
-from re import finditer
+from re import finditer, findall
 
 def splitPdf(pdf_path, matcher):
     if os.path.exists(pdf_path):
@@ -8,7 +8,8 @@ def splitPdf(pdf_path, matcher):
         if not os.path.exists(os.path.join(pdf_path, 'output')):
             os.mkdir(os.path.join(pdf_path, 'output'))
         for file in files:
-            site = file.replace('.pdf','')[-6:]
+            site = findall(r'([A-Z]{3}[0-9]{3})', file)[0]
+            #site = file.replace('.pdf','')[-6:]
             pdf_document = fitz.open(os.path.join(pdf_path, file))
             print(getDates(), '| Split pdf on : ', os.path.join(pdf_path, file))
             for key in matcher:
@@ -72,38 +73,54 @@ def parseText(path, matcher):
                     grabFlag = True
                     doctype = 1
                     data[header] = []
-                elif line.strip().replace('\"', '').startswith('Start Time,Period(min)'):
-                    header = 'Data' + str(len(line))
-                    grabFlag = True
+                elif line.strip().replace('\"', '').startswith('Start Time,'):
+                    #header = 'Data' + str(len(line))
                     doctype = 2
-                    data[header] = []
+                    headerD = line.strip()
+                    #data[header] = []
                 elif line.strip().startswith('---    END') and grabFlag:
                     grabFlag = False
                     data[header].append(line)
                     data[header].append('')
                     data[header].append('')
-                elif doctype == 2 and grabFlag and site == '':
-                    i = [m.start() for m in finditer(r',', line)]
-                    site = line.replace('\"', '')[i[1]+1: i[2]]
-                    if site[1:2] == '_':
-                        site = site[2:8]
+                elif doctype == 2:# and grabFlag and site == '':
+                    try:
+                        site = findall(r'([A-Z]{3}[0-9]{3})', line)[0]
+                        header = site
+                        grabFlag = True
+                    except Exception as e:
+                        i = [m.start() for m in finditer(r',', line)]
+                        site = line.replace('\"', '')[i[1]+1: i[2]]
+                        print(getDates(), '| Parse error 1 : ', e)
+                        #if site[1:2] == '_':
+                        #    site = site[2:8]
+                    if not site in data:
+                        data[header] = []
+                        data[header].append(headerD)
                 elif line.strip().startswith('+++    ') and grabFlag:
-                    site = line.replace('+++    ','').strip()[:-19]
-                    if site[1:2] == '_':
-                        site = site[2:8]
+                    try:
+                        site = findall(r'([A-Z]{3}[0-9]{3})', line)[0]
+                    except Exception as e:
+                        site = line.replace('+++    ','').strip()[:-19]
+                        print(getDates(), '| Parse error 2 : ', e)
+                        #if site[1:2] == '_':
+                        #    site = site[2:8]
                 if grabFlag:
                     data[header].append(line.strip())
             print(getDates(), '| Parse ', len(lines), ' lines')
             for key in matcher:
-                pdf = []
-                filename = key + ' ' + site + '.pdf'
                 for i in data:
+                    pdf = []
+                    if doctype == 1:
+                        filename = key + ' ' + site + '.pdf'
+                    else:
+                        filename = key + ' ' + i + '.pdf'
                     if  [s for s in data[i] if any(xs in s for xs in matcher[key])]:
                         pdf.extend(data[i])
                         print(getDates(), "|", key, " => ", len(data[i]), " lines")
-                if pdf != []:
-                    writeToPdf(pdf, path, filename, doctype)
-                    print(getDates(), '| saved on ', os.path.join(path, filename))
+                    if pdf != []:
+                        writeToPdf(pdf, path, filename, doctype)
+                        print(getDates(), '| saved on ', os.path.join(path, filename))
 
 def getDates():
     t = datetime.datetime.now()

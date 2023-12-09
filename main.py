@@ -198,7 +198,7 @@ class MainWindow(QMainWindow):
             try:
                 splitPdf(Path(path), dataPdf)
             except Exception as e:
-                print(self.getDate(), '| Error:', e)
+                print(self.getDate(), '| Error parse pdf:', e)
                 self.saveLog()
             self.LineInput1.setText('')
         if self.LineInput2.text() != '':
@@ -209,7 +209,7 @@ class MainWindow(QMainWindow):
             try:
                 parseText(Path(path), dataPdf)
             except Exception as e:
-                print(self.getDate(), '| Error:', e)
+                print(self.getDate(), '| Error parse text:', e)
                 self.saveLog()
             self.LineInput2.setText('')
         print(self.getDate(), '| Execute Done')
