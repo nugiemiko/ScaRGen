@@ -2,6 +2,8 @@ log/
 build/
 dist/
 __pycache__/
+__pycache__/pdf.cpython-311.pyc
 ScaRGen.exe
 ScaRGen.spec
 Prima.png
+Command.txt

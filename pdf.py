@@ -67,9 +67,10 @@ def parseText(path, matcher):
             doctype = 0
             site = ''
             header = ''
-            for line in lines:
+            for id, line in enumerate(lines):
                 if line.strip().startswith('LST '):
-                    header = line.strip()[4:-2]
+                    #header = line.strip()[4:-2]
+                    header = findall(r'([A-Z]{3}[0-9]{3})', lines[id+1])[0]
                     grabFlag = True
                     doctype = 1
                     data[header] = []
@@ -111,10 +112,11 @@ def parseText(path, matcher):
             for key in matcher:
                 for i in data:
                     pdf = []
-                    if doctype == 1:
-                        filename = key + ' ' + site + '.pdf'
-                    else:
-                        filename = key + ' ' + i + '.pdf'
+                    #if doctype == 1:
+                    #    filename = key + ' ' + site + '.pdf'
+                    #else:
+                    #    filename = key + ' ' + i + '.pdf'
+                    filename = key + ' ' + i + '.pdf'
                     if  [s for s in data[i] if any(xs in s for xs in matcher[key])]:
                         pdf.extend(data[i])
                         print(getDates(), "|", key, " => ", len(data[i]), " lines")
